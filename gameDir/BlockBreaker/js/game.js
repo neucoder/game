@@ -1,8 +1,3 @@
-var log = function () {
-    console.log.apply(console, arguments)
-}
-
-
 var Game = function () {
     var g = {
         actions: {},
@@ -63,14 +58,6 @@ var Game = function () {
     return g
 }
 
-var imageFromPath = function (path) {
-    var img = new Image()
-    img.src = path
-
-
-    //log(img)
-    return img
-}
 
 var Ball = function () {
     var image = imageFromPath("images/ball.jpg")
@@ -78,6 +65,8 @@ var Ball = function () {
         image: image,
         x: 150,
         y: 240,
+        width: image.width,
+        height: image.height,
         speedX: 3,
         speedY: 3,
         fired: false
@@ -106,9 +95,43 @@ var Ball = function () {
 
     }
 
+    //碰撞检测
+    o.collide = function (paddle) {
+        return rectOverlap(o, paddle)
+    }
 
     return o
 }
+
+var block = function (pos) {
+    //把block的位置pos数组传入
+    var image = imageFromPath("images/block.jpg")
+    var o = {
+        image: image,
+        x: pos[0],
+        y: pos[1],
+        width: image.width,
+        height: image.height
+    }
+    o.collide = function (ball) {
+        return rectOverlap(o,ball)
+    }
+    o.change = function (ball) {
+        ball.speedY *= -1
+    }
+    return o
+}
+
+var blocks = function () {
+    o = [
+        [0, 0, 1, 1, 1, 1, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 1, 1, 1, 1, 0, 0],
+    ]
+
+    return o
+}
+
 
 var Paddle = function () {
     var image = imageFromPath("images/paddle.jpg")
@@ -116,38 +139,24 @@ var Paddle = function () {
         image: image,
         x: 150,
         y: 280,
+        width: image.width,
+        height: image.height,
         speed: 10,
     }
-
-    o.moveLeft = function () {
-        if (o.x > 0) {
-            o.x -= o.speed
+    o.move = function (x) {
+        if (x < 0) {
+            x = 0
         }
+        if (x + o.image.width > 400) {
+            x = 400 - o.image.width
+        }
+        o.x = x
+    }
+    o.moveLeft = function () {
+        o.move(o.x - o.speed)
     }
     o.moveRight = function () {
-        if (o.x + o.image.width < 400) {
-            o.x += o.speed
-        }
-    }
-    //碰撞检测
-    o.collide = function (ball) {
-        o.x1 = o.x + o.image.width
-        o.y1 = o.y + o.image.height
-        ball.x1 = ball.x + ball.image.width
-        ball.y1 = ball.y + ball.image.height
-
-        if (ball.x > o.x1 || ball.x1 < o.x || ball.y > o.y1 || ball.y1 < o.y) {
-
-            return false
-        } else {
-            log(ball.x > o.x1, ball.x1 < o.x, ball.y > o.y1, ball.y1 < o.y,ball.y1,o.y)
-
-            log(`ball:(x:${ball.x},y:${ball.y})(x1:${ball.x1},y1:${ball.y1})paddle:(x:${o.x},y:${o.y})(x1:${o.x1},y1:${o.y1})`)
-            //ball.stopFire()
-            //debugger
-
-            return true
-        }
+        o.move(o.x + o.speed)
     }
 
 
@@ -156,10 +165,32 @@ var Paddle = function () {
 
 
 var main = function () {
+
     var game = Game()
     var paddle = Paddle()
-     ball = Ball()
+    ball = Ball()
+    var Block = blocks()
 
+    var drawBlocks = function () {
+        //log('draw block start',Block.length,Block[0].length)
+        for (var i = 0; i < Block.length; i++) {
+            for (var j = 0; j < Block[i].length; j++) {
+                tBlock = block([1 + j * 50, 1 + i * 20])
+                if(Block[i][j]===1){
+                    //log('block draw',Block)
+                    game.drawImage(tBlock)
+                }
+                if(tBlock.collide(ball)){
+                    if(Block[i][j]===1){
+                        tBlock.change(ball)
+                    }
+                    Block[i][j] = 0
+                    //if(Block[i][j] === )
+                    //tBlock.change(ball)
+                }
+            }
+        }
+    }
     game.registerAction('a', function () {
         paddle.moveLeft()
     })
@@ -177,7 +208,7 @@ var main = function () {
 
     game.update = function () {
         ball.move()
-        if (paddle.collide(ball)) {
+        if (ball.collide(paddle)) {
             ball.speedY *= -1
         }
     }
@@ -185,6 +216,7 @@ var main = function () {
         //log('draw')
         game.drawImage(paddle)
         game.drawImage(ball)
+        drawBlocks()
     }
 }
 
