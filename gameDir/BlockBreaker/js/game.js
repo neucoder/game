@@ -113,9 +113,7 @@ var block = function (pos) {
         width: image.width,
         height: image.height
     }
-    o.collide = function (ball) {
-        return rectOverlap(o,ball)
-    }
+
     o.change = function (ball) {
         ball.speedY *= -1
     }
@@ -173,23 +171,36 @@ var main = function () {
 
     var drawBlocks = function () {
         //log('draw block start',Block.length,Block[0].length)
+        var levalFlag = true
         for (var i = 0; i < Block.length; i++) {
             for (var j = 0; j < Block[i].length; j++) {
+                //var levalFlag = true
                 tBlock = block([1 + j * 50, 1 + i * 20])
-                if(Block[i][j]===1){
+                if (Block[i][j] > 0) {
                     //log('block draw',Block)
                     game.drawImage(tBlock)
                 }
-                if(tBlock.collide(ball)){
-                    if(Block[i][j]===1){
+                if (ball.collide(tBlock)) {
+                    if (Block[i][j] > 0) {
                         tBlock.change(ball)
                     }
-                    Block[i][j] = 0
+                    Block[i][j] -= 1
                     //if(Block[i][j] === )
                     //tBlock.change(ball)
                 }
+                //log("Block i j",Block[i][j] > 0)
+                if (Block[i][j] > 0) {
+                    levalFlag = false
+                }
+                //log(Block)
             }
         }
+        //log("leval flag",levalFlag)
+        if(levalFlag){
+            log("you win")
+            levalFlag = !levalFlag
+        }
+
     }
     game.registerAction('a', function () {
         paddle.moveLeft()
@@ -221,6 +232,7 @@ var main = function () {
 }
 
 main()
+
 
 
 
