@@ -17,6 +17,16 @@ class Game {
         }
         this.ball = null
         this.paddle = null
+        this.block = null
+        this.blocks = null
+        this.level = [
+            [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+
+        ]
+
     }
 
     static instance(...args) {
@@ -65,9 +75,12 @@ class Game {
 
     start() {
         this.state = "begin"
-        this.ball = new Ball(this.imageByName('ball'), 0, 0, 5, 5)
+        this.ball = new Ball(this.imageByName('ball'), 150, 150, 3, 3)
         this.paddle = new Paddle(this.imageByName('paddle'), 120, 280, 5, this.canvas)
+        this.block = new Block(this.imageByName('block'), -100, -100)
         window.addEventListener('keydown', (e) => {
+
+
             if (e.key === 'a') {
                 this.paddle.leftdown = true
             }
@@ -80,7 +93,7 @@ class Game {
             }
             if (e.key === 'r') {
                 this.state = "begin"
-                log(e.key, 'press down',this.state)
+                log(e.key, 'press down', this.state)
             }
         })
         window.addEventListener('keyup', (e) => {
@@ -96,6 +109,29 @@ class Game {
         //this.runLoop()
     }
 
+    drawBlock() {
+        var h = this.level.length
+        var l = this.level[0].length
+        for (let i = 0; i < h; i++) {
+            for (let j = 0; j < l; j++) {
+                if (this.level[i][j] > 0) {
+                    this.block.x =  (2 + j * 34)
+                    //log(this.block,(2 + j * 32))
+                    this.block.y = i * 18
+                    //log('block type',typeof block,block)
+                    this.drawImage(this.block)
+                    if(this.ball.collide(this.block)){
+                        this.ball.dy *= -1
+                        this.level[i][j] -= 1
+                    }
+                }else {
+                    this.level[i][j] = 0
+                }
+
+            }
+        }
+    }
+
 
     draw() {
         // log('game,draw,this', this)
@@ -106,6 +142,7 @@ class Game {
         if (this.state === "continue") {
             this.drawImage(this.ball)
             this.drawImage(this.paddle)
+            this.drawBlock()
         }
         if (this.state === "end") {
             this.end()
@@ -119,7 +156,7 @@ class Game {
 
     begin() {
         this.ctx.font = "20px Georgia";
-        this.ctx.fillText("game begin!", 50, 50);
+        this.ctx.fillText("game begin! press c to continue", 50, 50);
     }
 
     continue() {
@@ -132,8 +169,9 @@ class Game {
         if (this.ball.collide(this.paddle)) {
             this.ball.dy *= -1
         }
+
         if (this.ball.kill(this.paddle)) {
-            this.ball.init(50, 50, this.ball.life)
+            this.ball.init(150, 150, this.ball.life)
         }
         //log(this.ball.die())
         if (this.ball.die()) {
@@ -151,9 +189,9 @@ class Game {
 
 
     update() {
-        if(this.state === "begin"){
-            this.ball.init(50,50,5)
-            this.paddle.init(120,280)
+        if (this.state === "begin") {
+            this.ball.init(150, 150, 5)
+            this.paddle.init(120, 280)
         }
         if (this.state === "continue") {
             this.continue()
@@ -204,6 +242,12 @@ class Elem {
 
 }
 
+class Block extends Elem {
+    constructor(image, x, y) {
+        super(image, x, y)
+    }
+}
+
 class Paddle extends Elem {
     constructor(image, x, y, speed, ctx) {
         super(image, x, y)
@@ -225,7 +269,7 @@ class Paddle extends Elem {
 
     }
 
-    init(x,y){
+    init(x, y) {
         this.x = x
         this.y = y
     }
