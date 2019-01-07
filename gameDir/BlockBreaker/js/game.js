@@ -1,4 +1,7 @@
 var Game = function () {
+
+
+
     var g = {
         actions: {},
         keydowns: {}
@@ -12,7 +15,10 @@ var Game = function () {
     //drawImage
 
     g.drawImage = function (img) {
+
         g.content.drawImage(img.image, img.x, img.y)
+
+
     }
 
 
@@ -45,14 +51,16 @@ var Game = function () {
             }
 
         }
-        //update
 
+
+        //update
+ g.content.clearRect(0, 0, canvas.width, canvas.height)
+        //draw
+        g.draw()
         g.update()
         //clear
 
-        g.content.clearRect(0, 0, canvas.width, canvas.height)
-        //draw
-        g.draw()
+
     }, 1000 / 60)
 
     return g
@@ -60,7 +68,7 @@ var Game = function () {
 
 
 var Ball = function () {
-    var image = imageFromPath("images/ball.jpg")
+    var image = imageFromPath("images/ball.png")
     var o = {
         image: image,
         x: 150,
@@ -105,7 +113,7 @@ var Ball = function () {
 
 var block = function (pos) {
     //把block的位置pos数组传入
-    var image = imageFromPath("images/block.jpg")
+    var image = imageFromPath("images/block.png")
     var o = {
         image: image,
         x: pos[0],
@@ -132,7 +140,7 @@ var blocks = function () {
 
 
 var Paddle = function () {
-    var image = imageFromPath("images/paddle.jpg")
+    var image = imageFromPath("images/paddle.png")
     var o = {
         image: image,
         x: 150,
@@ -160,79 +168,4 @@ var Paddle = function () {
 
     return o
 }
-
-
-var main = function () {
-
-    var game = Game()
-    var paddle = Paddle()
-    ball = Ball()
-    var Block = blocks()
-
-    var drawBlocks = function () {
-        //log('draw block start',Block.length,Block[0].length)
-        var levalFlag = true
-        for (var i = 0; i < Block.length; i++) {
-            for (var j = 0; j < Block[i].length; j++) {
-                //var levalFlag = true
-                tBlock = block([1 + j * 50, 1 + i * 20])
-                if (Block[i][j] > 0) {
-                    //log('block draw',Block)
-                    game.drawImage(tBlock)
-                }
-                if (ball.collide(tBlock)) {
-                    if (Block[i][j] > 0) {
-                        tBlock.change(ball)
-                    }
-                    Block[i][j] -= 1
-                    //if(Block[i][j] === )
-                    //tBlock.change(ball)
-                }
-                //log("Block i j",Block[i][j] > 0)
-                if (Block[i][j] > 0) {
-                    levalFlag = false
-                }
-                //log(Block)
-            }
-        }
-        //log("leval flag",levalFlag)
-        if(levalFlag){
-            log("you win")
-            levalFlag = !levalFlag
-        }
-
-    }
-    game.registerAction('a', function () {
-        paddle.moveLeft()
-    })
-
-    game.registerAction('d', function () {
-        paddle.moveRight()
-    })
-    game.registerAction('f', function () {
-        ball.fire()
-    })
-    game.registerAction('p', function () {
-        ball.stopFire()
-    })
-
-
-    game.update = function () {
-        ball.move()
-        if (ball.collide(paddle)) {
-            ball.speedY *= -1
-        }
-    }
-    game.draw = function () {
-        //log('draw')
-        game.drawImage(paddle)
-        game.drawImage(ball)
-        drawBlocks()
-    }
-}
-
-main()
-
-
-
 
